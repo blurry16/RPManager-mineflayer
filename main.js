@@ -4,6 +4,8 @@
 const HOST = "localhost";
 const PORT = 11111;
 
+const ADMINS = ["blurry16"];
+
 const mineflayer = require("mineflayer");
 const fs = require("fs");
 
@@ -14,26 +16,29 @@ const bot = mineflayer.createBot({
 });
 
 const dataFilePath = "./data/data.json";
+const jobsFilePath = "./data/jobs.json";
 
-function saveData() {
+function saveData(path) {
     try {
-        fs.writeFileSync(dataFilePath, JSON.stringify(playersData, null, 2));
+        fs.writeFileSync(path, JSON.stringify(playersData, null, 2));
         console.log("Data saved successfully!");
     } catch (err) {
-        console.error("Error saving players data file:", err);
+        console.error("Error saving data file:", err);
     }
 }
 
-function loadData() {
-    return JSON.parse(fs.readFileSync(dataFilePath, "utf8"));
+function loadData(path) {
+    return JSON.parse(fs.readFileSync(path, "utf8"));
 }
 
 let playersData = {};
 try {
-    playersData = loadData();
+    playersData = loadData(dataFilePath);
     console.log("Loaded players data:", playersData);
+    jobsData = loadData(jobsFilePath);
+    console.log("Loaded jobs data:", jobsData);
 } catch (err) {
-    console.error("Error reading players data file:", err);
+    console.error("Error reading data file:", err);
     playersData = {};
 }
 
@@ -62,6 +67,8 @@ bot.on("chat", async (username, message) => {
 
     switch (args[0].toLowerCase()) {
         case "#register":
+            console.log(`${username} executed #register; ${args}`);
+
             uuid = await getUUID(username);
             if (playersData[uuid]) {
                 bot.chat(`${username} is already registered.`);
@@ -69,14 +76,17 @@ bot.on("chat", async (username, message) => {
                 playersData[uuid] = {
                     username: username,
                     balance: 500,
+                    job: null,
                     registeredAt: new Date().toISOString(),
                 };
-                saveData();
+                saveData(dataFilePath);
                 bot.chat(`Player ${username} successfully registered!`);
             }
             break;
 
         case "#balance":
+            console.log(`${username} executed #balance; ${args}`);
+
             username = args.length == 1 ? username : args[1];
             uuid = await getUUID(username);
             if (uuid === null) {
@@ -84,7 +94,7 @@ bot.on("chat", async (username, message) => {
                 break;
             }
             if (playersData[uuid]) {
-                balance = loadData()[uuid]["balance"];
+                balance = playersData[uuid]["balance"];
                 bot.chat(`Balance of player ${username} is ${balance}.`);
             } else {
                 bot.chat(`Player ${username} hasn't registered yet.`);
@@ -93,11 +103,13 @@ bot.on("chat", async (username, message) => {
             break;
 
         case "#pay":
+            console.log(`${username} executed #pay; ${args}`);
+
             if (username.toLowerCase() == args[1].toLowerCase) {
                 bot.chat("You can't pay yourself.");
                 break;
             }
-            
+
             amount = Number(args[2]);
             if (isNaN(amount)) {
                 bot.chat("Amount is NaN.");
@@ -125,11 +137,36 @@ bot.on("chat", async (username, message) => {
                 }
                 playersData[uuid]["balance"] -= amount;
                 playersData[payuuid]["balance"] += amount;
-                saveData()
-                bot.chat(`Player ${username} successfully paid ${amount} to ${playersData[payuuid]["username"]}.`)
+                saveData(dataFilePath);
+                bot.chat(
+                    `Player ${username} successfully paid ${amount} to ${playersData[payuuid]["username"]}.`
+                );
             } else {
                 bot.chat(`Player ${username} hasn't registered yet.`);
             }
+
+        case "#newjob":
+            console.log(`${username} executed #newjob; ${args}`);
+
+            if (!ADMINS.includes(username.toLowerCase())) break;
+
+            if (args.length == 1) {
+                bot.chat("Not enough arguments!")
+                break;
+            }
+            jobName = args[1].toLowerCase();
+            wage = Number(args[2]);
+            if (isNaN(wage)) {
+                bot.chat("Wage is NaN.");
+                break;
+            }
+            if (jobsData[jobName]) {
+                bot.chat(`Job ${jobName} already exists.`);
+                break;
+            }
+            jobsData[jobName] = wage
+            console.log(`Created job ${jobName} with wage ${wage}.`)
+            bot.chat(`Created job ${jobName} with wage ${wage}.`)
     }
 });
 
