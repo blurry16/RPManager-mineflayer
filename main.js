@@ -4,6 +4,9 @@
 const HOST = "localhost";
 const PORT = 11111;
 
+const dataFilePath = "./data/data.json";
+const jobsFilePath = "./data/jobs.json";
+
 const ADMINS = ["blurry16"];
 
 function isAdmin(username) {
@@ -18,9 +21,6 @@ const bot = mineflayer.createBot({
     port: PORT,
     auth: "microsoft",
 });
-
-const dataFilePath = "./data/data.json";
-const jobsFilePath = "./data/jobs.json";
 
 function saveData(path, data) {
     try {
@@ -171,10 +171,10 @@ bot.on("chat", async (username, message) => {
                 break;
             }
             jobsData[jobName] = wage;
-            saveData(jobsFilePath, jobsData)
+            saveData(jobsFilePath, jobsData);
             console.log(`Created job ${jobName} with wage ${wage}.`);
             bot.chat(`Created job ${jobName} with wage ${wage}.`);
-            
+
             break;
 
         case "#setjob":
@@ -187,29 +187,53 @@ bot.on("chat", async (username, message) => {
                 break;
             }
 
-            toSetJob = args[2].toLowerCase()
+            toSetJob = args[2].toLowerCase();
             if (!jobsData[toSetJob]) {
-                bot.chat(`Job ${toSetJob} doesn't exist.`)
+                bot.chat(`Job ${toSetJob} doesn't exist.`);
                 break;
             }
 
             toSetUuid = await getUUID(args[1]);
-            
+
             if (toSetUuid === null) {
                 bot.chat(`Error fetching ${args[1]}'s UUID.`);
                 break;
             }
             if (!playersData[toSetUuid]) {
-                bot.chat(`Player ${args[1]} hasn't registered yet.`)
+                bot.chat(`Player ${args[1]} hasn't registered yet.`);
                 break;
             }
-            playersData[toSetUuid]["job"] = toSetJob
-            saveData(dataFilePath, playersData)
-            bot.chat(`Congrats player ${args[1]} on their new job of ${toSetJob}!`)
-        
+            playersData[toSetUuid]["job"] = toSetJob;
+            saveData(dataFilePath, playersData);
+            bot.chat(
+                `Congrats player ${args[1]} on their new job of ${toSetJob}!`
+            );
 
             break;
-                        
+
+        case "#getjob":
+            console.log(`${username} executed #getjob; ${args}`);
+
+            username = args.length == 1 ? username : args[1];
+            uuid = await getUUID(username);
+            if (uuid === null) {
+                bot.chat(`Error fetching ${args[1]}'s UUID.`);
+                break;
+            }
+
+            if (!playersData[uuid]) {
+                bot.chat(`Player ${username} hasn't registered yet.`);
+                break;
+            }
+
+            if (playersData[uuid]["job"] === null) {
+                bot.chat(`Player ${username} has no job.`);
+                break;
+            } else {
+                job = playersData[uuid]["job"]
+                bot.chat(       `Player ${username} has ${job} job with ${jobsData[job]} wage.`);
+            }
+            break;
     }
 });
 
