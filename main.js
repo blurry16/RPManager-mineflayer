@@ -6,6 +6,10 @@ const PORT = 11111;
 
 const ADMINS = ["blurry16"];
 
+function isAdmin(username) {
+    return ADMINS.includes(username.toLowerCase());
+}
+
 const mineflayer = require("mineflayer");
 const fs = require("fs");
 
@@ -18,9 +22,9 @@ const bot = mineflayer.createBot({
 const dataFilePath = "./data/data.json";
 const jobsFilePath = "./data/jobs.json";
 
-function saveData(path) {
+function saveData(path, data) {
     try {
-        fs.writeFileSync(path, JSON.stringify(playersData, null, 2));
+        fs.writeFileSync(path, JSON.stringify(data, null, 2));
         console.log("Data saved successfully!");
     } catch (err) {
         console.error("Error saving data file:", err);
@@ -79,7 +83,7 @@ bot.on("chat", async (username, message) => {
                     job: null,
                     registeredAt: new Date().toISOString(),
                 };
-                saveData(dataFilePath);
+                saveData(dataFilePath, playersData);
                 bot.chat(`Player ${username} successfully registered!`);
             }
             break;
@@ -137,7 +141,7 @@ bot.on("chat", async (username, message) => {
                 }
                 playersData[uuid]["balance"] -= amount;
                 playersData[payuuid]["balance"] += amount;
-                saveData(dataFilePath);
+                saveData(dataFilePath, playersData);
                 bot.chat(
                     `Player ${username} successfully paid ${amount} to ${playersData[payuuid]["username"]}.`
                 );
@@ -145,13 +149,15 @@ bot.on("chat", async (username, message) => {
                 bot.chat(`Player ${username} hasn't registered yet.`);
             }
 
+            break;
+
         case "#newjob":
             console.log(`${username} executed #newjob; ${args}`);
 
-            if (!ADMINS.includes(username.toLowerCase())) break;
+            if (!isAdmin(username)) break;
 
             if (args.length == 1) {
-                bot.chat("Not enough arguments!")
+                bot.chat("Not enough arguments!");
                 break;
             }
             jobName = args[1].toLowerCase();
@@ -164,9 +170,46 @@ bot.on("chat", async (username, message) => {
                 bot.chat(`Job ${jobName} already exists.`);
                 break;
             }
-            jobsData[jobName] = wage
-            console.log(`Created job ${jobName} with wage ${wage}.`)
-            bot.chat(`Created job ${jobName} with wage ${wage}.`)
+            jobsData[jobName] = wage;
+            saveData(jobsFilePath, jobsData)
+            console.log(`Created job ${jobName} with wage ${wage}.`);
+            bot.chat(`Created job ${jobName} with wage ${wage}.`);
+            
+            break;
+
+        case "#setjob":
+            console.log(`${username} executed #setjob; ${args}`);
+
+            if (!isAdmin(username)) break;
+
+            if (args.length < 3) {
+                bot.chat("Not enough arguments!");
+                break;
+            }
+
+            toSetJob = args[2].toLowerCase()
+            if (!jobsData[toSetJob]) {
+                bot.chat(`Job ${toSetJob} doesn't exist.`)
+                break;
+            }
+
+            toSetUuid = await getUUID(args[1]);
+            
+            if (toSetUuid === null) {
+                bot.chat(`Error fetching ${args[1]}'s UUID.`);
+                break;
+            }
+            if (!playersData[toSetUuid]) {
+                bot.chat(`Player ${args[1]} hasn't registered yet.`)
+                break;
+            }
+            playersData[toSetUuid]["job"] = toSetJob
+            saveData(dataFilePath, playersData)
+            bot.chat(`Congrats player ${args[1]} on their new job of ${toSetJob}!`)
+        
+
+            break;
+                        
     }
 });
 
