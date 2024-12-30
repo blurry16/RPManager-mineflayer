@@ -1,26 +1,7 @@
-// const HOST = 'cubeville.org'
-// const PORT = 25565
-
-const HOST = "localhost";
-const PORT = 11111;
-
-const dataFilePath = "./data/data.json";
-const jobsFilePath = "./data/jobs.json";
-
-const ADMINS = ["blurry16"];
-
-function isAdmin(username) {
-    return ADMINS.includes(username.toLowerCase());
-}
+// TODO: add prismarine-viewer when 1.21.1 version is released.
 
 const mineflayer = require("mineflayer");
 const fs = require("fs");
-
-const bot = mineflayer.createBot({
-    host: HOST,
-    port: PORT,
-    auth: "microsoft",
-});
 
 function saveData(path, data) {
     try {
@@ -34,6 +15,28 @@ function saveData(path, data) {
 function loadData(path) {
     return JSON.parse(fs.readFileSync(path, "utf8"));
 }
+
+const config = loadData("config.json");
+
+const HOST = config["host"];
+const PORT = config["port"];
+const VERSION = config["version"]
+
+const dataFilePath = config["datapath"];
+const jobsFilePath = config["jobspath"];
+
+const ADMINS = config["admins"];
+
+function isAdmin(username) {
+    return ADMINS.includes(username.toLowerCase());
+}
+
+const bot = mineflayer.createBot({
+    host: HOST,
+    port: PORT,
+    version: VERSION,
+    auth: "microsoft",
+});
 
 let playersData = {};
 try {
@@ -230,15 +233,66 @@ bot.on("chat", async (username, message) => {
                 bot.chat(`Player ${username} has no job.`);
                 break;
             } else {
-                job = playersData[uuid]["job"]
-                bot.chat(       `Player ${username} has ${job} job with ${jobsData[job]} wage.`);
+                job = playersData[uuid]["job"];
+                bot.chat(
+                    `Player ${username} has ${job} job with ${jobsData[job]} wage.`
+                );
             }
             break;
+
+        case "#payall":
+            console.log(`${username} executed #payall; ${args}`);
+
+            if (!isAdmin(username)) break;
+
+            for (i in playersData) {
+                job = playersData[i]["job"];
+                if (job) {
+                    playersData[i]["balance"] += jobsData[job];
+                    console.log(`Paid wage to ${playersData[i]["username"]}`);
+                }
+            }
+            saveData(dataFilePath, playersData);
+
+            bot.chat("Paid salary to all players.");
+            console.log("Paid salary to all players.");
+
+            break;
+        case "#paywage":
+            console.log(`${username} executed #paywage; ${args}`);
+
+            if (!isAdmin(username)) break;
+
+            if (args.length == 1) {
+                bot.chat("Not enough arguments!");
+                break;
+            }
+
+            c = 0;
+            let largs = args.map((item) => {
+                return item.toLowerCase();
+            })
+            for (uuid in playersData) {
+                if (playersData[uuid]["job"] === null) continue;
+                if (largs.includes(playersData[uuid]["username"].toLowerCase())) {
+                    playersData[uuid]["balance"] +=
+                        jobsData[playersData[uuid]["job"]];
+                    c++;
+                }
+            }
+            saveData(dataFilePath, playersData);
+            bot.chat(`Salary was paid to ${c} players.`);
+
+            break;
+
+        case "#github":
+            console.log(`${username} executed #github; ${args}`);
+            bot.chat("github.com/blurry16/RPManager-mineflayer");
     }
 });
 
 bot.on("spawn", () => {
-    console.log("Bot has spawned!");
+    console.log(`Bot ${bot.username} has spawned!`);
 });
 
 bot.on("error", (err) => {

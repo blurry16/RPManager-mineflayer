@@ -1,0 +1,8 @@
+{
+  "host": "",
+  "port": 25565,
+  "version": "",
+  "admins": [],
+  "datapath": "./data/data.json",
+  "jobspath": "./data/jobs.json"
+}
