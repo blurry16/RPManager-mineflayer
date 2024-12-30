@@ -20,7 +20,7 @@ const config = loadData("config.json");
 
 const HOST = config["host"];
 const PORT = config["port"];
-const VERSION = config["version"]
+const VERSION = config["version"];
 
 const dataFilePath = config["datapath"];
 const jobsFilePath = config["jobspath"];
@@ -271,10 +271,12 @@ bot.on("chat", async (username, message) => {
             c = 0;
             let largs = args.map((item) => {
                 return item.toLowerCase();
-            })
+            });
             for (uuid in playersData) {
                 if (playersData[uuid]["job"] === null) continue;
-                if (largs.includes(playersData[uuid]["username"].toLowerCase())) {
+                if (
+                    largs.includes(playersData[uuid]["username"].toLowerCase())
+                ) {
                     playersData[uuid]["balance"] +=
                         jobsData[playersData[uuid]["job"]];
                     c++;
