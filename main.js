@@ -57,33 +57,37 @@ bot.on('chat', async (username, message) => {
 
     const args = message.trim().split(' ');
 
-    if (args[0].toLowerCase() === '#register') {
-        const uuid = await getUUID(username);
-        if (playersData[uuid]) {
-            bot.chat(`${username} is already registered.`);
-        } else {
-            playersData[uuid] = {
-                username: username,
-                balance: 500,
-                registeredAt: new Date().toISOString(),
-            };
-            saveData();
-            bot.chat(`Player ${username} successfully registered!`);
-        }
-    }
-    if (args[0].toLowerCase() === "#balance") {
-        const uuid = await getUUID(args.length == 1 ? username : args[1]);
-        if (uuid === null) {
-            bot.chat(`Error fetching ${args[1]}'s UUID.`)
-        } else {
+    switch (args[0].toLowerCase()) {
+        case ('#register'):
+            uuid = await getUUID(username);
             if (playersData[uuid]) {
-                balance = loadData()[uuid]["balance"]
-                bot.chat(`Balance of player ${args.length == 1 ? username : args[1]} is ${balance}.`)
+                bot.chat(`${username} is already registered.`);
             } else {
-                bot.chat(`Player ${username} hasn't registered yet.`)
+                playersData[uuid] = {
+                    username: username,
+                    balance: 500,
+                    registeredAt: new Date().toISOString(),
+                };
+                saveData();
+                bot.chat(`Player ${username} successfully registered!`);
             }
-        }
+            break;
+        
+        case ('#balance'):
+            uuid = await getUUID(args.length == 1 ? username : args[1]);
+            if (uuid === null) {
+                bot.chat(`Error fetching ${args[1]}'s UUID.`)
+            } else {
+                if (playersData[uuid]) {
+                    balance = loadData()[uuid]["balance"]
+                    bot.chat(`Balance of player ${args.length == 1 ? username : args[1]} is ${balance}.`)
+                } else {
+                    bot.chat(`Player ${username} hasn't registered yet.`)
+                }
+            }
+            break;
     }
+    
 });
 
 bot.on('spawn', () => {
