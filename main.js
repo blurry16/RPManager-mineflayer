@@ -1,5 +1,8 @@
-const HOST = 'cubeville.org'
-const PORT = 25565
+// const HOST = 'cubeville.org'
+// const PORT = 25565
+
+const HOST = 'localhost'
+const PORT = 11111
 
 const mineflayer = require('mineflayer');
 const fs = require('fs');
@@ -12,14 +15,6 @@ const bot = mineflayer.createBot({
 
 const dataFilePath = './data/data.json';
 
-let playersData = {};
-try {
-    playersData = JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
-    console.log('Loaded player data:', playersData); 
-} catch (err) {
-    console.error('Error reading players data file:', err);
-    playersData = {};
-}
 
 function saveData() {
     try {
@@ -28,6 +23,19 @@ function saveData() {
     } catch (err) {
         console.error('Error saving players data file:', err);
     }
+}
+
+function loadData() {
+    return JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
+}
+
+let playersData = {};
+try {
+    playersData = loadData();
+    console.log('Loaded players data:', playersData); 
+} catch (err) {
+    console.error('Error reading players data file:', err);
+    playersData = {};
 }
 
 async function getUUID(username) {
@@ -49,18 +57,27 @@ bot.on('chat', async (username, message) => {
 
     const args = message.trim().split(' ');
 
-    if (args[0] === '#register') {
+    if (args[0].toLowerCase() === '#register') {
         const uuid = await getUUID(username); 
         if (playersData[uuid]) {
             bot.chat(`${username} is already registered.`);
         } else {
             playersData[uuid] = {
                 username: username,
-                money: 500,
+                balance: 500,
                 registeredAt: new Date().toISOString(),
             };
             saveData();
             bot.chat(`Player ${username} successfully registered!`);
+        }
+    }
+    if (args[0].toLowerCase() === "#balance") {
+        const uuid = await getUUID(username);
+        if (playersData[uuid]) {
+            balance = loadData()[uuid]["balance"]
+            bot.chat(`Balance of player ${username} is ${balance}.`)
+        } else {
+            bot.chat(`Player ${username} hasn't registered yet.`)
         }
     }
 });
