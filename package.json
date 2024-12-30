@@ -1,7 +1,7 @@
 {
   "name": "rpmanager-mineflayer",
   "version": "1.0.0",
-  "description": "",
+  "description": "https://github.com/blurry16/RPManager-mineflayer",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

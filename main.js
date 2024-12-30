@@ -8,9 +8,9 @@ const mineflayer = require('mineflayer');
 const fs = require('fs');
 
 const bot = mineflayer.createBot({
-  host: HOST,
-  port: PORT,
-  auth: 'microsoft'
+    host: HOST,
+    port: PORT,
+    auth: 'microsoft'
 });
 
 const dataFilePath = './data/data.json';
@@ -32,7 +32,7 @@ function loadData() {
 let playersData = {};
 try {
     playersData = loadData();
-    console.log('Loaded players data:', playersData); 
+    console.log('Loaded players data:', playersData);
 } catch (err) {
     console.error('Error reading players data file:', err);
     playersData = {};
@@ -53,12 +53,12 @@ async function getUUID(username) {
 }
 
 bot.on('chat', async (username, message) => {
-    if (username === bot.username) return; 
+    if (username === bot.username) return;
 
     const args = message.trim().split(' ');
 
     if (args[0].toLowerCase() === '#register') {
-        const uuid = await getUUID(username); 
+        const uuid = await getUUID(username);
         if (playersData[uuid]) {
             bot.chat(`${username} is already registered.`);
         } else {
@@ -72,12 +72,16 @@ bot.on('chat', async (username, message) => {
         }
     }
     if (args[0].toLowerCase() === "#balance") {
-        const uuid = await getUUID(username);
-        if (playersData[uuid]) {
-            balance = loadData()[uuid]["balance"]
-            bot.chat(`Balance of player ${username} is ${balance}.`)
+        const uuid = await getUUID(args.length == 1 ? username : args[1]);
+        if (uuid === null) {
+            bot.chat(`Error fetching ${args[1]}'s UUID.`)
         } else {
-            bot.chat(`Player ${username} hasn't registered yet.`)
+            if (playersData[uuid]) {
+                balance = loadData()[uuid]["balance"]
+                bot.chat(`Balance of player ${args.length == 1 ? username : args[1]} is ${balance}.`)
+            } else {
+                bot.chat(`Player ${username} hasn't registered yet.`)
+            }
         }
     }
 });
