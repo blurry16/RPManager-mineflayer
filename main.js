@@ -16,6 +16,12 @@ function loadData(path) {
     return JSON.parse(fs.readFileSync(path, "utf8"));
 }
 
+const motd = (fs.existsSync("motd")) ? fs.readFileSync("motd", "utf8") : null
+
+if (motd !== null) {
+    console.log(motd)
+}
+
 const config = loadData("config.json");
 
 const HOST = config["host"];
