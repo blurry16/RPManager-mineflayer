@@ -211,7 +211,57 @@ bot.on("chat", async (username, message) => {
             bot.chat(
                 `Congrats player ${args[1]} on their new job of ${toSetJob}!`
             );
+            
+            break;
+        case "#deljob":
+            console.log(`${username} executed #deljob; ${args}`)
 
+            if (!isAdmin(username)) break;
+
+            if (args.length == 1) {
+                bot.chat("Not enough arguments!")
+                break;
+            }
+
+            c = 0;
+            largs = args.map((item) => {
+                return item.toLowerCase()
+            })
+            for (job in jobsData) {
+                if (largs.includes(job)) {
+                    delete jobsData[job];
+                    c++;
+                    console.log(`Job ${job} deleted.`)
+                }
+            }
+            console.log(`${c} jobs were deleted.`)
+            bot.chat(`${c} jobs were deleted.`)
+            break;
+            
+
+        case "#resetjob":
+            console.log(`${username} executed #resetjob; ${args}`);
+
+            if (!isAdmin(username)) break;
+
+            if (args.length == 1) {
+                bot.chat("Not enough arguments!");
+                break;
+            }
+
+            c = 0;
+            largs = args.map((item) => {
+                return item.toLowerCase();
+            });
+            for (uuid in playersData) {
+                if (largs.includes(playersData[uuid]["username"].toLowerCase()) && playersData[uuid]["job"]) {
+                    playersData[uuid]["job"] = null;
+                c++;
+                console.log(`Job reset for ${playersData[uuid]["username"]}`)}
+            }
+            saveData(dataFilePath, playersData);
+            console.log(`Job reset for ${c} players.`)
+            bot.chat(`Job reset for ${c} players.`)
             break;
 
         case "#getjob":
@@ -258,6 +308,7 @@ bot.on("chat", async (username, message) => {
             console.log("Paid salary to all players.");
 
             break;
+
         case "#paywage":
             console.log(`${username} executed #paywage; ${args}`);
 
@@ -269,7 +320,7 @@ bot.on("chat", async (username, message) => {
             }
 
             c = 0;
-            let largs = args.map((item) => {
+            largs = args.map((item) => {
                 return item.toLowerCase();
             });
             for (uuid in playersData) {
