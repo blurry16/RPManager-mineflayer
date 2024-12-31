@@ -16,10 +16,10 @@ function loadData(path) {
     return JSON.parse(fs.readFileSync(path, "utf8"));
 }
 
-const motd = (fs.existsSync("motd")) ? fs.readFileSync("motd", "utf8") : null
+const motd = fs.existsSync("motd") ? fs.readFileSync("motd", "utf8") : null;
 
 if (motd !== null) {
-    console.log(motd)
+    console.log(motd);
 }
 
 const config = loadData("config.json");
@@ -44,7 +44,9 @@ const bot = mineflayer.createBot({
     auth: "microsoft",
 });
 
+let uuids = {};
 let playersData = {};
+
 try {
     playersData = loadData(dataFilePath);
     console.log("Loaded players data:", playersData);
@@ -56,6 +58,8 @@ try {
 }
 
 async function getUUID(username) {
+    if (uuids[username]) return uuids[username];
+
     try {
         const response = await fetch(
             `https://api.mojang.com/users/profiles/minecraft/${username}`
@@ -66,6 +70,7 @@ async function getUUID(username) {
             );
         }
         const data = await response.json();
+        uuids[username] = data.id;
         return data.id;
     } catch (error) {
         console.error("Error fetching UUID:", error);
@@ -217,33 +222,32 @@ bot.on("chat", async (username, message) => {
             bot.chat(
                 `Congrats player ${args[1]} on their new job of ${toSetJob}!`
             );
-            
+
             break;
         case "#deljob":
-            console.log(`${username} executed #deljob; ${args}`)
+            console.log(`${username} executed #deljob; ${args}`);
 
             if (!isAdmin(username)) break;
 
             if (args.length == 1) {
-                bot.chat("Not enough arguments!")
+                bot.chat("Not enough arguments!");
                 break;
             }
 
             c = 0;
             largs = args.map((item) => {
-                return item.toLowerCase()
-            })
+                return item.toLowerCase();
+            });
             for (job in jobsData) {
                 if (largs.includes(job)) {
                     delete jobsData[job];
                     c++;
-                    console.log(`Job ${job} deleted.`)
+                    console.log(`Job ${job} deleted.`);
                 }
             }
-            console.log(`${c} jobs were deleted.`)
-            bot.chat(`${c} jobs were deleted.`)
+            console.log(`${c} jobs were deleted.`);
+            bot.chat(`${c} jobs were deleted.`);
             break;
-            
 
         case "#resetjob":
             console.log(`${username} executed #resetjob; ${args}`);
@@ -260,14 +264,22 @@ bot.on("chat", async (username, message) => {
                 return item.toLowerCase();
             });
             for (uuid in playersData) {
-                if (largs.includes(playersData[uuid]["username"].toLowerCase()) && playersData[uuid]["job"]) {
+                if (
+                    largs.includes(
+                        playersData[uuid]["username"].toLowerCase()
+                    ) &&
+                    playersData[uuid]["job"]
+                ) {
                     playersData[uuid]["job"] = null;
-                c++;
-                console.log(`Job reset for ${playersData[uuid]["username"]}`)}
+                    c++;
+                    console.log(
+                        `Job reset for ${playersData[uuid]["username"]}`
+                    );
+                }
             }
             saveData(dataFilePath, playersData);
-            console.log(`Job reset for ${c} players.`)
-            bot.chat(`Job reset for ${c} players.`)
+            console.log(`Job reset for ${c} players.`);
+            bot.chat(`Job reset for ${c} players.`);
             break;
 
         case "#getjob":
