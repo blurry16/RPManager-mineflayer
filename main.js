@@ -78,12 +78,38 @@ async function getUUID(username) {
     }
 }
 
+async function manageMoney(username, amount) {
+    if (isNaN(amount)) return bot.chat("Amount is NaN.");
+
+    let uuid = await getUUID(username);
+    if (playersData[uuid]) {
+        playersData[uuid]["balance"] += amount;
+        saveData(dataFilePath, playersData);
+        bot.chat(
+            (amount > 0 ? "Added " : "Removed ") +
+                `${Math.abs(amount)}` +
+                (amount > 0 ? " to " : " from ") +
+                `${username}'s balance.`
+        );
+    } else {
+        bot.chat(`Player ${username} hasn't registered yet.`);
+    }
+}
+
 bot.on("chat", async (username, message) => {
     if (username === bot.username) return;
 
     const args = message.trim().split(" ");
 
     switch (args[0].toLowerCase()) {
+        case "#help":
+            console.log(`${username} executed #help; ${args}`);
+
+            bot.chat(
+                "Find manual at GitHub -> github.com/blurry16/RPManager-mineflayer/blob/master/MAN.md"
+            );
+            break;
+
         case "#register":
             console.log(`${username} executed #register; ${args}`);
 
@@ -354,6 +380,29 @@ bot.on("chat", async (username, message) => {
             saveData(dataFilePath, playersData);
             bot.chat(`Salary was paid to ${c} players.`);
 
+            break;
+
+        case "#addmoney":
+            console.log(`${username} executed #addmoney; ${args}`);
+
+            if (!isAdmin(username)) return;
+            if (args.length < 3) {
+                bot.chat("Not enough arguments!");
+                break;
+            }
+            manageMoney(args[1], Number(args[2]));
+            break;
+
+        case "#removemoney":
+        case "#rmmoney":
+            console.log(`${username} executed #rmmoney; ${args}`);
+
+            if (!isAdmin(username)) return;
+            if (args.length == 1) {
+                bot.chat("Not enough arguments!");
+                break;
+            }
+            manageMoney(args[1], -Number(args[2]));
             break;
 
         case "#github":
