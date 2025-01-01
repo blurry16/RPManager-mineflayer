@@ -5,6 +5,12 @@ be executed only by players in the admin list.
 
 ## Common commands
 
+### _man_ || _manual_ || _help_
+
+Syntax : `#man`
+
+Sends hard-coded link to manual hosted on GitHub.
+
 ### _register_
 
 Syntax: `#register`
