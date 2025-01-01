@@ -105,6 +105,7 @@ bot.on("chat", async (username, message) => {
 
     const args = message.trim().split(" ");
 
+    playersData = loadData(dataFilePath);
     switch (args[0].toLowerCase()) {
         case "#help":
             logUsage(username, args);
