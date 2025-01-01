@@ -16,6 +16,12 @@ function loadData(path) {
     return JSON.parse(fs.readFileSync(path, "utf8"));
 }
 
+function arrayToLowerCase(array) {
+    return array.map((item) => {
+        return item.toLowerCase();
+    });
+}
+
 const motd = fs.existsSync("motd") ? fs.readFileSync("motd", "utf8") : null;
 
 if (motd !== null) {
@@ -31,7 +37,7 @@ const VERSION = config["version"];
 const dataFilePath = config["datapath"];
 const jobsFilePath = config["jobspath"];
 
-const ADMINS = config["admins"];
+const ADMINS = arrayToLowerCase(config["admins"]);
 
 function isAdmin(username) {
     return ADMINS.includes(username.toLowerCase());
@@ -108,6 +114,8 @@ bot.on("chat", async (username, message) => {
     playersData = loadData(dataFilePath);
     switch (args[0].toLowerCase()) {
         case "#help":
+        case "#man":
+        case "#manual":
             logUsage(username, args);
 
             bot.chat(
@@ -267,9 +275,7 @@ bot.on("chat", async (username, message) => {
             }
 
             c = 0;
-            largs = args.map((item) => {
-                return item.toLowerCase();
-            });
+            largs = arrayToLowerCase(args);
             for (job in jobsData) {
                 if (largs.includes(job)) {
                     delete jobsData[job];
@@ -292,9 +298,7 @@ bot.on("chat", async (username, message) => {
             }
 
             c = 0;
-            largs = args.map((item) => {
-                return item.toLowerCase();
-            });
+            largs = arrayToLowerCase(args);
             for (uuid in playersData) {
                 if (
                     largs.includes(
@@ -370,9 +374,7 @@ bot.on("chat", async (username, message) => {
             }
 
             c = 0;
-            largs = args.map((item) => {
-                return item.toLowerCase();
-            });
+            largs = arrayToLowerCase(args);
             for (uuid in playersData) {
                 if (playersData[uuid]["job"] === null) continue;
                 if (
