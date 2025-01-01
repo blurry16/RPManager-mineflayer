@@ -96,6 +96,10 @@ async function manageMoney(username, amount) {
     }
 }
 
+function logUsage(username, args) {
+    console.log(`${username} executed ${args[0].toLowerCase()}; ${args}`);
+}
+
 bot.on("chat", async (username, message) => {
     if (username === bot.username) return;
 
@@ -103,7 +107,7 @@ bot.on("chat", async (username, message) => {
 
     switch (args[0].toLowerCase()) {
         case "#help":
-            console.log(`${username} executed #help; ${args}`);
+            logUsage(username, args);
 
             bot.chat(
                 "Find manual at GitHub -> github.com/blurry16/RPManager-mineflayer/blob/master/MAN.md"
@@ -111,7 +115,7 @@ bot.on("chat", async (username, message) => {
             break;
 
         case "#register":
-            console.log(`${username} executed #register; ${args}`);
+            logUsage(username, args);
 
             uuid = await getUUID(username);
             if (playersData[uuid]) {
@@ -129,7 +133,7 @@ bot.on("chat", async (username, message) => {
             break;
 
         case "#balance":
-            console.log(`${username} executed #balance; ${args}`);
+            logUsage(username, args);
 
             username = args.length == 1 ? username : args[1];
             uuid = await getUUID(username);
@@ -147,7 +151,7 @@ bot.on("chat", async (username, message) => {
             break;
 
         case "#pay":
-            console.log(`${username} executed #pay; ${args}`);
+            logUsage(username, args);
 
             if (username.toLowerCase() == args[1].toLowerCase) {
                 bot.chat("You can't pay yourself.");
@@ -192,7 +196,7 @@ bot.on("chat", async (username, message) => {
             break;
 
         case "#newjob":
-            console.log(`${username} executed #newjob; ${args}`);
+            logUsage(username, args);
 
             if (!isAdmin(username)) break;
 
@@ -218,7 +222,7 @@ bot.on("chat", async (username, message) => {
             break;
 
         case "#setjob":
-            console.log(`${username} executed #setjob; ${args}`);
+            logUsage(username, args);
 
             if (!isAdmin(username)) break;
 
@@ -250,8 +254,9 @@ bot.on("chat", async (username, message) => {
             );
 
             break;
+
         case "#deljob":
-            console.log(`${username} executed #deljob; ${args}`);
+            logUsage(username, args);
 
             if (!isAdmin(username)) break;
 
@@ -276,7 +281,7 @@ bot.on("chat", async (username, message) => {
             break;
 
         case "#resetjob":
-            console.log(`${username} executed #resetjob; ${args}`);
+            logUsage(username, args);
 
             if (!isAdmin(username)) break;
 
@@ -309,7 +314,7 @@ bot.on("chat", async (username, message) => {
             break;
 
         case "#getjob":
-            console.log(`${username} executed #getjob; ${args}`);
+            logUsage(username, args);
 
             username = args.length == 1 ? username : args[1];
             uuid = await getUUID(username);
@@ -335,7 +340,7 @@ bot.on("chat", async (username, message) => {
             break;
 
         case "#payall":
-            console.log(`${username} executed #payall; ${args}`);
+            logUsage(username, args);
 
             if (!isAdmin(username)) break;
 
@@ -354,7 +359,7 @@ bot.on("chat", async (username, message) => {
             break;
 
         case "#paywage":
-            console.log(`${username} executed #paywage; ${args}`);
+            logUsage(username, args);
 
             if (!isAdmin(username)) break;
 
@@ -383,7 +388,7 @@ bot.on("chat", async (username, message) => {
             break;
 
         case "#addmoney":
-            console.log(`${username} executed #addmoney; ${args}`);
+            logUsage(username, args);
 
             if (!isAdmin(username)) return;
             if (args.length < 3) {
@@ -395,7 +400,7 @@ bot.on("chat", async (username, message) => {
 
         case "#removemoney":
         case "#rmmoney":
-            console.log(`${username} executed #rmmoney; ${args}`);
+            logUsage(username, args);
 
             if (!isAdmin(username)) return;
             if (args.length == 1) {
