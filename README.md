@@ -21,7 +21,7 @@ node main.js
 
 Check out [the Python version of RPManager](https://github.com/blurry16/RPManager).  
 
-This is not exactly what Python version was. Python version is much more complex, it has more commands but because I don't find why would I ever need them, they were not ported.  
+This is not exactly what Python version was. Python version is much more complex, it has more commands but because I don't find why would I ever need them they were not ported.  
 
 **I've never used it on Cubeville. Yet. If you want to try it, I recommend you to ask staff. It doesn't even matter on what server you're playing.**
 
