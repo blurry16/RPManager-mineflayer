@@ -24,9 +24,8 @@ function arrayToLowerCase(array) {
 
 const motd = fs.existsSync("motd") ? fs.readFileSync("motd", "utf8") : null;
 
-if (motd !== null) {
-    console.log(motd);
-}
+if (motd !== null) console.log(motd);
+
 
 const config = loadData("config.json");
 
@@ -38,6 +37,8 @@ const dataFilePath = config["datapath"];
 const jobsFilePath = config["jobspath"];
 
 const ADMINS = arrayToLowerCase(config["admins"]);
+
+if (ADMINS.length == 0) console.log("No admins specified.")
 
 function isAdmin(username) {
     return ADMINS.includes(username.toLowerCase());
