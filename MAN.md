@@ -9,7 +9,7 @@ be executed only by players in the admin list.
 
 Syntax : `#man`
 
-Sends hard-coded link to manual hosted on GitHub.
+Sends the hard-coded link to the user manual hosted on GitHub.
 
 ### _register_
 
@@ -29,7 +29,7 @@ Simply prints your or somebody's bank balance.
 Syntax: `#pay <username> <amount>`  
 **amount >= 1**
 
-Subtracts passed amount of money from executor's balance and adds passed amount to passed username's balance.  
+Subtracts _X_ money from executor's balance and adds _X_ to another player's balance.  
 Tbh it's pretty self-explanatory.
 
 ### _getjob_
