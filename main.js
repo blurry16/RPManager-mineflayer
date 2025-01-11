@@ -1,5 +1,7 @@
 // TODO: add prismarine-viewer when 1.21.1 version is released.
 
+const configPath = "config.json";
+
 const mineflayer = require("mineflayer");
 const fs = require("fs");
 
@@ -26,7 +28,7 @@ const motd = fs.existsSync("motd") ? fs.readFileSync("motd", "utf8") : null;
 
 if (motd !== null) console.log(motd);
 
-const config = loadData("config.json");
+let config = loadData(configPath);
 
 const HOST = config["host"];
 const PORT = config["port"];
@@ -35,12 +37,12 @@ const VERSION = config["version"];
 const dataFilePath = config["datapath"];
 const jobsFilePath = config["jobspath"];
 
-const ADMINS = arrayToLowerCase(config["admins"]);
+let admins = arrayToLowerCase(config["admins"]);
 
-if (ADMINS.length == 0) console.log("No admins specified.");
+if (admins.length == 0) console.log("No admins specified.");
 
 function isAdmin(username) {
-    return ADMINS.includes(username.toLowerCase());
+    return admins.includes(username.toLowerCase());
 }
 
 const bot = mineflayer.createBot({
@@ -112,167 +114,119 @@ bot.on("chat", async (username, message) => {
     const args = message.trim().split(" ");
 
     playersData = loadData(dataFilePath);
+    config = loadData(configPath);
+    admins = arrayToLowerCase(config["admins"]);
+
     switch (args[0].toLowerCase()) {
         case "#help":
         case "#man":
         case "#manual":
             logUsage(username, args);
-
-            bot.chat(
+            return bot.chat(
                 "Find manual at GitHub -> github.com/blurry16/RPManager-mineflayer/blob/master/MAN.md"
             );
-            break;
 
         case "#register":
             logUsage(username, args);
 
             uuid = await getUUID(username);
-            if (playersData[uuid]) {
-                bot.chat(`${username} is already registered.`);
-            } else {
-                playersData[uuid] = {
-                    username: username,
-                    balance: 500,
-                    job: null,
-                    registeredAt: new Date().toISOString(),
-                };
-                saveData(dataFilePath, playersData);
-                bot.chat(`Player ${username} successfully registered!`);
-            }
-            break;
+            if (playersData[uuid])
+                return bot.chat(`${username} is already registered.`);
+            playersData[uuid] = {
+                username: username,
+                balance: 500,
+                job: null,
+                registeredAt: new Date().toISOString(),
+            };
+            saveData(dataFilePath, playersData);
+            return bot.chat(`Player ${username} successfully registered!`);
 
         case "#balance":
             logUsage(username, args);
 
             username = args.length == 1 ? username : args[1];
             uuid = await getUUID(username);
-            if (uuid === null) {
-                bot.chat(`Error fetching ${args[1]}'s UUID.`);
-                break;
-            }
-            if (playersData[uuid]) {
-                balance = playersData[uuid]["balance"];
-                bot.chat(`Balance of player ${username} is ${balance}.`);
-            } else {
-                bot.chat(`Player ${username} hasn't registered yet.`);
-            }
+            if (uuid === null)
+                return bot.chat(`Error fetching ${args[1]}'s UUID.`);
+            if (!playersData[uuid])
+                return bot.chat(`Player ${username} hasn't registered yet.`);
 
-            break;
+            balance = playersData[uuid]["balance"];
+            return bot.chat(`Balance of player ${username} is ${balance}.`);
 
         case "#pay":
             logUsage(username, args);
 
-            if (username.toLowerCase() == args[1].toLowerCase) {
-                bot.chat("You can't pay yourself.");
-                break;
-            }
+            if (username.toLowerCase() == args[1].toLowerCase)
+                return bot.chat("You can't pay yourself.");
 
             amount = Number(args[2]);
-            if (isNaN(amount)) {
-                bot.chat("Amount is NaN.");
-                break;
-            }
+            if (isNaN(amount)) return bot.chat("Amount is NaN.");
 
             uuid = await getUUID(username);
-            if (playersData[uuid]) {
-                payuuid = await getUUID(args[1]);
-                if (payuuid === null) {
-                    bot.chat(`Error fetching ${args[1]}'s UUID.`);
-                    break;
-                }
-                if (amount < 1) {
-                    bot.chat("Amount must be more or equal to 1.");
-                    break;
-                }
-                if (!playersData[payuuid]) {
-                    bot.chat(`Player ${args[1]} hasn't registered yet.`);
-                    break;
-                }
-                if (playersData[uuid]["balance"] < amount) {
-                    bot.chat(`Player ${username} has not enough of money.`);
-                    break;
-                }
-                playersData[uuid]["balance"] -= amount;
-                playersData[payuuid]["balance"] += amount;
-                saveData(dataFilePath, playersData);
-                bot.chat(
-                    `Player ${username} successfully paid ${amount} to ${playersData[payuuid]["username"]}.`
-                );
-            } else {
-                bot.chat(`Player ${username} hasn't registered yet.`);
-            }
+            if (!playersData[uuid])
+                return bot.chat(`Player ${username} hasn't registered yet.`);
 
-            break;
+            payuuid = await getUUID(args[1]);
+            if (payuuid === null)
+                return bot.chat(`Error fetching ${args[1]}'s UUID.`);
+            if (amount < 1)
+                return bot.chat("Amount must be more or equal to 1.");
+            if (!playersData[payuuid])
+                return bot.chat(`Player ${args[1]} hasn't registered yet.`);
+            if (playersData[uuid]["balance"] < amount)
+                return bot.chat(`Player ${username} has not enough of money.`);
+
+            playersData[uuid]["balance"] -= amount;
+            playersData[payuuid]["balance"] += amount;
+            saveData(dataFilePath, playersData);
+            return bot.chat(
+                `Player ${username} successfully paid ${amount} to ${playersData[payuuid]["username"]}.`
+            );
 
         case "#newjob":
             logUsage(username, args);
 
-            if (!isAdmin(username)) break;
+            if (!isAdmin(username)) return;
 
-            if (args.length == 1) {
-                bot.chat("Not enough arguments!");
-                break;
-            }
+            if (args.length == 1) return bot.chat("Not enough arguments!");
             jobName = args[1].toLowerCase();
             wage = Number(args[2]);
-            if (isNaN(wage)) {
-                bot.chat("Wage is NaN.");
-                break;
-            }
-            if (jobsData[jobName]) {
-                bot.chat(`Job ${jobName} already exists.`);
-                break;
-            }
+            if (isNaN(wage)) return bot.chat("Wage is NaN.");
+            if (jobsData[jobName])
+                return bot.chat(`Job ${jobName} already exists.`);
             jobsData[jobName] = wage;
             saveData(jobsFilePath, jobsData);
             console.log(`Created job ${jobName} with wage ${wage}.`);
-            bot.chat(`Created job ${jobName} with wage ${wage}.`);
-
-            break;
+            return bot.chat(`Created job ${jobName} with wage ${wage}.`);
 
         case "#setjob":
             logUsage(username, args);
 
-            if (!isAdmin(username)) break;
-
-            if (args.length < 3) {
-                bot.chat("Not enough arguments!");
-                break;
-            }
-
+            if (!isAdmin(username)) return;
+            if (args.length < 3) return bot.chat("Not enough arguments!");
             toSetJob = args[2].toLowerCase();
-            if (!jobsData[toSetJob]) {
-                bot.chat(`Job ${toSetJob} doesn't exist.`);
-                break;
-            }
+            if (!jobsData[toSetJob])
+                return bot.chat(`Job ${toSetJob} doesn't exist.`);
 
             toSetUuid = await getUUID(args[1]);
 
-            if (toSetUuid === null) {
-                bot.chat(`Error fetching ${args[1]}'s UUID.`);
-                break;
-            }
-            if (!playersData[toSetUuid]) {
-                bot.chat(`Player ${args[1]} hasn't registered yet.`);
-                break;
-            }
+            if (toSetUuid === null)
+                return bot.chat(`Error fetching ${args[1]}'s UUID.`);
+            if (!playersData[toSetUuid])
+                return bot.chat(`Player ${args[1]} hasn't registered yet.`);
+
             playersData[toSetUuid]["job"] = toSetJob;
             saveData(dataFilePath, playersData);
-            bot.chat(
+            return bot.chat(
                 `Congrats player ${args[1]} on their new job of ${toSetJob}!`
             );
-
-            break;
 
         case "#deljob":
             logUsage(username, args);
 
-            if (!isAdmin(username)) break;
-
-            if (args.length == 1) {
-                bot.chat("Not enough arguments!");
-                break;
-            }
+            if (!isAdmin(username)) return;
+            if (args.length == 1) return bot.chat("Not enough arguments!");
 
             c = 0;
             largs = arrayToLowerCase(args);
@@ -284,18 +238,14 @@ bot.on("chat", async (username, message) => {
                 }
             }
             console.log(`${c} jobs were deleted.`);
-            bot.chat(`${c} jobs were deleted.`);
-            break;
+            return bot.chat(`${c} jobs were deleted.`);
 
         case "#resetjob":
             logUsage(username, args);
 
-            if (!isAdmin(username)) break;
+            if (!isAdmin(username)) return;
 
-            if (args.length == 1) {
-                bot.chat("Not enough arguments!");
-                break;
-            }
+            if (args.length == 1) return bot.chat("Not enough arguments!");
 
             c = 0;
             largs = arrayToLowerCase(args);
@@ -315,39 +265,31 @@ bot.on("chat", async (username, message) => {
             }
             saveData(dataFilePath, playersData);
             console.log(`Job reset for ${c} players.`);
-            bot.chat(`Job reset for ${c} players.`);
-            break;
+            return bot.chat(`Job reset for ${c} players.`);
 
         case "#getjob":
             logUsage(username, args);
 
             username = args.length == 1 ? username : args[1];
             uuid = await getUUID(username);
-            if (uuid === null) {
-                bot.chat(`Error fetching ${args[1]}'s UUID.`);
-                break;
-            }
+            if (uuid === null)
+                return bot.chat(`Error fetching ${args[1]}'s UUID.`);
 
-            if (!playersData[uuid]) {
-                bot.chat(`Player ${username} hasn't registered yet.`);
-                break;
-            }
+            if (!playersData[uuid])
+                return bot.chat(`Player ${username} hasn't registered yet.`);
 
-            if (playersData[uuid]["job"] === null) {
-                bot.chat(`Player ${username} has no job.`);
-                break;
-            } else {
-                job = playersData[uuid]["job"];
-                bot.chat(
-                    `Player ${username} has ${job} job with ${jobsData[job]} wage.`
-                );
-            }
-            break;
+            if (playersData[uuid]["job"] === null)
+                return bot.chat(`Player ${username} has no job.`);
+
+            job = playersData[uuid]["job"];
+            return bot.chat(
+                `Player ${username} has ${job} job with ${jobsData[job]} wage.`
+            );
 
         case "#payall":
             logUsage(username, args);
 
-            if (!isAdmin(username)) break;
+            if (!isAdmin(username)) return;
 
             for (i in playersData) {
                 job = playersData[i]["job"];
@@ -358,20 +300,15 @@ bot.on("chat", async (username, message) => {
             }
             saveData(dataFilePath, playersData);
 
-            bot.chat("Paid salary to all players.");
             console.log("Paid salary to all players.");
-
-            break;
+            return bot.chat("Paid salary to all players.");
 
         case "#paywage":
             logUsage(username, args);
 
-            if (!isAdmin(username)) break;
+            if (!isAdmin(username)) return;
 
-            if (args.length == 1) {
-                bot.chat("Not enough arguments!");
-                break;
-            }
+            if (args.length == 1) return bot.chat("Not enough arguments!");
 
             c = 0;
             largs = arrayToLowerCase(args);
@@ -386,18 +323,13 @@ bot.on("chat", async (username, message) => {
                 }
             }
             saveData(dataFilePath, playersData);
-            bot.chat(`Salary was paid to ${c} players.`);
-
-            break;
+            return bot.chat(`Salary was paid to ${c} players.`);
 
         case "#addmoney":
             logUsage(username, args);
 
             if (!isAdmin(username)) return;
-            if (args.length < 3) {
-                bot.chat("Not enough arguments!");
-                break;
-            }
+            if (args.length < 3) return bot.chat("Not enough arguments!");
             manageMoney(args[1], Number(args[2]));
             break;
 
@@ -406,16 +338,14 @@ bot.on("chat", async (username, message) => {
             logUsage(username, args);
 
             if (!isAdmin(username)) return;
-            if (args.length == 1) {
-                bot.chat("Not enough arguments!");
-                break;
-            }
+            if (args.length == 1) return bot.chat("Not enough arguments!");
+
             manageMoney(args[1], -Number(args[2]));
             break;
 
         case "#github":
             console.log(`${username} executed #github; ${args}`);
-            bot.chat("github.com/blurry16/RPManager-mineflayer");
+            return bot.chat("github.com/blurry16/RPManager-mineflayer");
     }
 });
 
