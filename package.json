@@ -7,5 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "blurry16",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "prismarine-viewer": "^1.30.0"
+  }
 }

@@ -1,5 +1,3 @@
-// TODO: add prismarine-viewer when 1.21.1 version is released.
-
 const configPath = "config.json";
 
 const mineflayer = require("mineflayer");
@@ -29,6 +27,10 @@ const motd = fs.existsSync("motd") ? fs.readFileSync("motd", "utf8") : null;
 if (motd !== null) console.log(motd);
 
 let config = loadData(configPath);
+
+const mineflayerViewer = config["use-prismarine-viewer"]
+    ? require("prismarine-viewer").mineflayer
+    : null;
 
 const HOST = config["host"];
 const PORT = config["port"];
@@ -107,6 +109,19 @@ async function manageMoney(username, amount) {
 function logUsage(username, args) {
     console.log(`${username} executed ${args[0].toLowerCase()}; ${args}`);
 }
+
+bot.on("spawn", () => {
+    console.log(`Bot ${bot.username} has spawned!`);
+});
+
+bot.once("spawn", () => {
+    if (mineflayerViewer) mineflayerViewer(bot, { port: config["prismarine-viewer-port"] });
+    
+});
+
+bot.on("error", (err) => {
+    console.error("Bot error:", err);
+});
 
 bot.on("chat", async (username, message) => {
     if (username === bot.username) return;
@@ -347,12 +362,4 @@ bot.on("chat", async (username, message) => {
             console.log(`${username} executed #github; ${args}`);
             return bot.chat("github.com/blurry16/RPManager-mineflayer");
     }
-});
-
-bot.on("spawn", () => {
-    console.log(`Bot ${bot.username} has spawned!`);
-});
-
-bot.on("error", (err) => {
-    console.error("Bot error:", err);
 });

@@ -4,5 +4,7 @@
   "version": "",
   "admins": [],
   "datapath": "./data/data.json",
-  "jobspath": "./data/jobs.json"
+  "jobspath": "./data/jobs.json",
+  "use-prismarine-viewer": false,
+  "prismarine-viewer-port": 3000
 }
