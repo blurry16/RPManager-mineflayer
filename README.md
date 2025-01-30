@@ -18,16 +18,17 @@ After, change the config file (by default `config.json`) values to your ones and
 node main.js
 ```
 
-#### Additional requirements
+### Additional requirements
 
-RPManager supports [Prismarine Viewer](https://github.com/PrismarineJS/prismarine-viewer). In order to use it, you need to change the `"use-prismarine-viewer"` value at the config file to `true` and the `"prismarine-viewer-port"` value to your one, or keep the default 3000.  
+RPManager supports [Prismarine Viewer](https://github.com/PrismarineJS/prismarine-viewer). In order to use it, you need to change the `"use-prismarine-viewer"` value at the config file to `true` and the `"prismarine-viewer-port"` value to your one, or keep the default `3000`.  
+
 **Don't forget to install the prismarine-viewer package:**
 
 ```bash
 npm install prismarine-viewer
 ```
 
-**RPManager is usable without Prismarine Viewer!**
+### RPManager is usable without Prismarine Viewer!
 
 ## Important notes
 
