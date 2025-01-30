@@ -115,8 +115,8 @@ bot.on("spawn", () => {
 });
 
 bot.once("spawn", () => {
-    if (mineflayerViewer) mineflayerViewer(bot, { port: config["prismarine-viewer-port"] });
-    
+    if (mineflayerViewer)
+        mineflayerViewer(bot, { port: config["prismarine-viewer-port"] });
 });
 
 bot.on("error", (err) => {
