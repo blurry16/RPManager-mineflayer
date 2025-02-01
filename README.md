@@ -18,7 +18,10 @@ After, change the config file (by default `config.json`) values to your ones and
 node main.js
 ```
 
-### Additional requirements
+Ta-dam! It works!  
+Please mind that it's possible to cast Prismarine Viewer of the bot, [see the Prismarine Viewer paragraph](https://github.com/blurry16/RPManager-mineflayer?tab=readme-ov-file#prismarine-viewer)
+
+### Prismarine Viewer
 
 RPManager supports [Prismarine Viewer](https://github.com/PrismarineJS/prismarine-viewer). In order to use it, you need to change the `"use-prismarine-viewer"` value at the config file to `true` and the `"prismarine-viewer-port"` value to your one, or keep the default `3000`.  
 
