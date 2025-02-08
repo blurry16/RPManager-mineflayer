@@ -24,7 +24,7 @@ function arrayToLowerCase(array) {
 
 const motd = fs.existsSync("motd") ? fs.readFileSync("motd", "utf8") : null;
 
-if (motd !== null) console.log(motd);
+if (motd !== null && motd !== "") console.log(motd);
 
 let config = loadData(configPath);
 
